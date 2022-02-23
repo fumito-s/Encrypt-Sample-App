@@ -18,7 +18,7 @@ import com.fumito.encryptsampleapp.ui.theme.EncryptSampleAppTheme
 class MainActivity : ComponentActivity() {
 
     companion object {
-        private const val PLAIN_TEXT = "This is plain text"
+        private const val PLAIN_TEXT = "This is plain text."
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,21 +44,23 @@ fun DisplayColumn(text: String) {
         )
 
         // encrypted
+        val encrypted = SecurityUtil.encrypt(text)
         LabelAndText(
             label = stringResource(R.string.label_encrypted_value),
-            value = "This is encrypted text"
+            value = encrypted
         )
 
         // decrypted
+        val decrypted = SecurityUtil.decrypt(encrypted)
         LabelAndText(
             label = stringResource(R.string.label_decrypted_value),
-            value = "This is decrypted text"
+            value = decrypted
         )
 
         // result
         LabelAndText(
             label = stringResource(R.string.label_result),
-            value = "True"
+            value = (text == decrypted).toString()
         )
     }
 }
