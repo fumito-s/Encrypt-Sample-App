@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Encrypt Sample App</string>
+    <string name="label_plain_text">Plain Text</string>
+    <string name="label_encrypted_value">Encrypted Text</string>
+    <string name="label_decrypted_value">Decrypted Text</string>
+    <string name="label_result">Are decrypted and plain the same?</string>
 </resources>
