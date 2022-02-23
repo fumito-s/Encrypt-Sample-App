@@ -7,13 +7,13 @@ import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
 
 object SecurityUtil {
 
     private const val PROVIDER = "AndroidKeyStore"
     private const val KEY_STORE_ALIAS = "KeyStoreAlias"
     private const val TRANSFORMATION = "AES/CBC/PKCS7Padding"
-
 
     private val keyStore = KeyStore.getInstance(PROVIDER).apply {
         this.load(null)
@@ -33,8 +33,10 @@ object SecurityUtil {
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
             .build()
 
-        keyGenerator.init(keyGenParameterSpec)
-        keyGenerator.generateKey()
+        if (!keyStore.containsAlias(KEY_STORE_ALIAS)) {
+            keyGenerator.init(keyGenParameterSpec)
+            keyGenerator.generateKey()
+        }
     }
 
     fun encrypt(value: String): String {
@@ -50,7 +52,8 @@ object SecurityUtil {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey)
 
             val encrypted = cipher.doFinal(value.toByteArray(Charsets.UTF_8))
-            val combined = cipher.iv + encrypted
+            val iv = cipher.iv
+            val combined = iv + encrypted
 
             // base64 encode and return it
             return Base64.getEncoder().encodeToString(combined)
@@ -60,10 +63,28 @@ object SecurityUtil {
     }
 
     fun decrypt(value: String): String {
-        // base64 decode
+        try {
+            // generate key pair
+            generateAesKey()
 
-        // decrypt value
+            // get secret key
+            val secretKey = keyStore.getKey(KEY_STORE_ALIAS, null) as SecretKey
 
-        return value
+            // base64 decode
+            val decoded = Base64.getDecoder().decode(value)
+
+            // decrypt value
+            val iv = decoded.copyOfRange(0, 16)
+            val encrypted = decoded.copyOfRange(16, decoded.size)
+
+            val ivSpec = IvParameterSpec(iv)
+            val cipher = Cipher.getInstance(TRANSFORMATION)
+
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
+            val decrypted = cipher.doFinal(encrypted)
+            return String(decrypted)
+        } catch (e: Exception) {
+            return e.toString()
+        }
     }
 }
