@@ -46,7 +46,7 @@ fun DisplayColumn(text: String) {
         // encrypted
         LabelAndText(
             label = stringResource(R.string.label_encrypted_value),
-            value = "This is encrypted text"
+            value = SecurityUtil.encrypt(text)
         )
 
         // decrypted
